@@ -1,31 +1,34 @@
-﻿#include <iostream>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_NON_CONFORMING_SWPRINTFS
+#include <stdio.h>
 #include <windows.h>
-using namespace std;
 
-int keyboard_type, keyboard_buttons;
+/**
+ * \brief Функция узнаёт тип клавиатуры пользователя
+ * \param keyboard_type_msg Строка с сообщением о типе клавиатуры
+ * \return Код возврата
+ */
+extern "C" _declspec(dllexport) int KeyboardType(TCHAR* keyboard_type_msg)
+{
+    int keyboard_type = GetKeyboardType(0);
+    const TCHAR* keyboard_type_str;
 
-DWORD WINAPI ThreadProc(CONST LPVOID lp_param) {
-    keyboard_type = GetKeyboardType(0);
-    keyboard_buttons = GetKeyboardType(2);
-    ExitThread(0);
-}
-
-VOID Error(const string& sz_message) {
-    cout << sz_message;
-    cout << "LastError = " << GetLastError();
-    ExitProcess(0);
-}
-
-INT main() {
-
-    HANDLE h_thread = CreateThread(nullptr, 0, &ThreadProc,nullptr, 0, nullptr);
-    if (h_thread == nullptr) {
-        Error("Failed to create thread.\r\n");
+    switch (keyboard_type)
+    {
+    case 4:
+        keyboard_type_str = L"Улучшенные 101- или 102-клавишные клавиатуры (и совместимые)";
+        break;
+    case 7:
+        keyboard_type_str = L"Японская клавиатура";
+        break;
+    case 8:
+        keyboard_type_str = L"Корейская клавиатура";
+        break;
+    default:
+        keyboard_type_str = L"Неизвестный тип клавиатуры";
+        break;
     }
 
-    WaitForSingleObject(h_thread, INFINITE);
-    cout << keyboard_type;
-
-    CloseHandle(h_thread);
-    ExitProcess(0);
+    swprintf(keyboard_type_msg, L"Тип вашей клавиатуры: %d (%s)", keyboard_type, keyboard_type_str);
+    return EXIT_SUCCESS;
 }
